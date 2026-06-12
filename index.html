@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌳 Aprenda DOM — Do Zero ao Avançado</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --verde:    #22c55e;
+    --verde-esc:#16a34a;
+    --azul:     #3b82f6;
+    --roxo:     #8b5cf6;
+    --amarelo:  #fbbf24;
+    --laranja:  #f97316;
+    --rosa:     #ec4899;
+    --bg:       #0f172a;
+    --bg2:      #1e293b;
+    --bg3:      #334155;
+    --texto:    #e2e8f0;
+    --texto2:   #94a3b8;
+    --borda:    #334155;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Baloo 2', sans-serif;
+    background: var(--bg);
+    color: var(--texto);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── SIDEBAR ─────────────────────────────── */
+  #sidebar {
+    position: fixed; top: 0; left: 0;
+    width: 280px; height: 100vh;
+    background: var(--bg2);
+    border-right: 2px solid var(--borda);
+    overflow-y: auto;
+    z-index: 100;
+    display: flex; flex-direction: column;
+  }
+
+  .sidebar-header {
+    padding: 20px 18px 14px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-bottom: 2px solid var(--borda);
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .sidebar-header h1 {
+    font-size: 1.3rem; font-weight: 800;
+    background: linear-gradient(90deg, var(--verde), var(--azul));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .sidebar-header p { font-size: .78rem; color: var(--texto2); margin-top: 2px; }
+
+  .nivel-label {
+    font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--texto2);
+    padding: 14px 18px 6px;
+  }
+
+  .lesson-btn {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; text-align: left;
+    background: none; border: none; cursor: pointer;
+    padding: 10px 18px; color: var(--texto2);
+    font-family: 'Baloo 2', sans-serif; font-size: .9rem;
+    transition: all .2s; border-left: 3px solid transparent;
+  }
+  .lesson-btn:hover { color: var(--texto); background: var(--bg3); }
+  .lesson-btn.active {
+    color: var(--verde); background: rgba(34,197,94,.1);
+    border-left-color: var(--verde); font-weight: 700;
+  }
+  .lesson-btn .icon { font-size: 1.1rem; flex-shrink: 0; }
+  .lesson-btn .badge {
+    margin-left: auto; font-size: .7rem; font-weight: 700;
+    padding: 1px 7px; border-radius: 20px;
+  }
+
+  /* ─── MAIN ─────────────────────────────────── */
+  #main {
+    margin-left: 280px;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  /* ─── TOPBAR ──────────────────────────────── */
+  #topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--bg2);
+    border-bottom: 2px solid var(--borda);
+    position: sticky; top: 0; z-index: 50;
+  }
+  #topbar h2 { font-size: 1.1rem; font-weight: 700; }
+
+  .nav-btns { display: flex; gap: 8px; }
+  .nav-btns button {
+    background: var(--bg3); border: none; cursor: pointer;
+    color: var(--texto); font-family: 'Baloo 2',sans-serif;
+    padding: 7px 16px; border-radius: 8px; font-size: .85rem;
+    transition: all .2s;
+  }
+  .nav-btns button:hover { background: var(--azul); color: #fff; }
+  .nav-btns button:disabled { opacity: .3; cursor: default; }
+
+  /* ─── CONTENT ─────────────────────────────── */
+  #content { padding: 32px 36px; max-width: 860px; }
+
+  .lesson-title {
+    font-size: 2rem; font-weight: 800; margin-bottom: 6px;
+  }
+  .lesson-subtitle {
+    font-size: 1rem; color: var(--texto2); margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--bg2); border: 1.5px solid var(--borda);
+    border-radius: 14px; padding: 22px 24px; margin-bottom: 22px;
+  }
+  .card-title {
+    font-size: 1.05rem; font-weight: 700; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .explain-box {
+    background: linear-gradient(135deg, rgba(34,197,94,.08), rgba(59,130,246,.08));
+    border: 1.5px solid rgba(34,197,94,.25);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 20px;
+    font-size: 1rem; line-height: 1.7;
+  }
+  .explain-box .emoji-big { font-size: 2.2rem; float: left; margin-right: 14px; }
+
+  p { line-height: 1.75; margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+
+  strong { color: var(--amarelo); }
+  em { color: var(--verde); font-style: normal; font-weight: 600; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg3); color: var(--rosa);
+    padding: 2px 7px; border-radius: 5px; font-size: .88em;
+  }
+
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    background: #0d1117; border: 1.5px solid var(--borda);
+    border-radius: 10px; padding: 18px 20px;
+    font-size: .88rem; overflow-x: auto; margin: 12px 0;
+    line-height: 1.6; color: #e2e8f0;
+  }
+  .kw  { color: #ff79c6; }
+  .fn  { color: #50fa7b; }
+  .str { color: #f1fa8c; }
+  .cmt { color: #6272a4; font-style: italic; }
+  .tag { color: #ff79c6; }
+  .atr { color: #50fa7b; }
+  .val { color: #f1fa8c; }
+
+  /* ─── PLAYGROUND ──────────────────────────── */
+  #playground {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0; border: 2px solid var(--borda); border-radius: 14px;
+    overflow: hidden; margin-top: 10px;
+  }
+
+  .play-panel {
+    display: flex; flex-direction: column;
+  }
+  .play-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--bg3); font-size: .82rem; font-weight: 700;
+    letter-spacing: .05em; text-transform: uppercase; color: var(--texto2);
+    border-bottom: 1.5px solid var(--borda);
+  }
+  .play-header span { display: flex; align-items: center; gap: 6px; }
+
+  #code-editor {
+    flex: 1; resize: none; border: none; outline: none;
+    background: #0d1117; color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace; font-size: .87rem;
+    padding: 16px; line-height: 1.65; tab-size: 2; min-height: 320px;
+  }
+
+  #preview-frame {
+    flex: 1; border: none;
+    background: #fff; min-height: 320px;
+    border-left: 2px solid var(--borda);
+  }
+
+  .play-footer {
+    display: flex; gap: 8px; padding: 10px 14px;
+    background: var(--bg3); border-top: 1.5px solid var(--borda);
+  }
+
+  .btn {
+    border: none; cursor: pointer;
+    font-family: 'Baloo 2', sans-serif; font-weight: 700;
+    padding: 8px 18px; border-radius: 8px; font-size: .88rem;
+    transition: all .15s;
+  }
+  .btn-run   { background: var(--verde);  color: #000; }
+  .btn-run:hover   { background: var(--verde-esc); }
+  .btn-reset { background: var(--bg2); color: var(--texto2); }
+  .btn-reset:hover { background: var(--borda); color: var(--texto); }
+  .btn-ai    { background: linear-gradient(90deg, var(--roxo), var(--azul)); color: #fff; }
+  .btn-ai:hover { opacity: .85; }
+
+  /* ─── CHAT IA ─────────────────────────────── */
+  #chat-panel {
+    position: fixed; right: 0; top: 0; bottom: 0;
+    width: 380px;
+    background: var(--bg2);
+    border-left: 2px solid var(--borda);
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+    z-index: 200;
+  }
+  #chat-panel.open { transform: translateX(0); }
+
+  .chat-header {
+    padding: 16px 20px;
+    background: linear-gradient(90deg, var(--roxo), var(--azul));
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .chat-header h3 { font-size: 1rem; font-weight: 700; color: #fff; }
+  .chat-header button {
+    background: rgba(255,255,255,.2); border: none; color: #fff;
+    width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+    font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .chat-header button:hover { background: rgba(255,255,255,.35); }
+
+  #chat-messages {
+    flex: 1; overflow-y: auto; padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .msg {
+    max-width: 90%; border-radius: 12px; padding: 10px 14px;
+    font-size: .9rem; line-height: 1.6;
+    animation: msgIn .25s ease;
+  }
+  @keyframes msgIn { from { opacity:0; transform:translateY(8px); } }
+
+  .msg.user {
+    align-self: flex-end;
+    background: var(--azul); color: #fff; border-radius: 12px 12px 2px 12px;
+  }
+  .msg.ai {
+    align-self: flex-start;
+    background: var(--bg3); color: var(--texto); border-radius: 12px 12px 12px 2px;
+  }
+  .msg.ai strong { color: var(--verde); }
+  .msg.ai code {
+    background: var(--bg); color: var(--rosa);
+    font-size: .82em;
+  }
+  .msg-loading { display: flex; gap: 5px; align-items: center; padding: 10px 14px; }
+  .dot { width:8px;height:8px;border-radius:50%;background:var(--texto2);animation:blink 1.2s infinite; }
+  .dot:nth-child(2){animation-delay:.2s}
+  .dot:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+
+  .chat-input-area {
+    padding: 12px 16px;
+    border-top: 1.5px solid var(--borda);
+    display: flex; gap: 8px;
+  }
+  #chat-input {
+    flex: 1; background: var(--bg3); border: 1.5px solid var(--borda);
+    color: var(--texto); border-radius: 10px; padding: 10px 14px;
+    font-family: 'Baloo 2', sans-serif; font-size: .9rem;
+    resize: none; outline: none; max-height: 120px;
+    transition: border-color .2s;
+  }
+  #chat-input:focus { border-color: var(--roxo); }
+  #chat-send {
+    background: linear-gradient(135deg, var(--roxo), var(--azul));
+    border: none; color: #fff; border-radius: 10px;
+    width: 42px; cursor: pointer; font-size: 1.2rem;
+    transition: opacity .2s; flex-shrink: 0;
+  }
+  #chat-send:hover { opacity: .8; }
+
+  /* FAB chat */
+  #chat-fab {
+    position: fixed; bottom: 28px; right: 28px;
+    background: linear-gradient(135deg, var(--roxo), var(--azul));
+    border: none; color: #fff; width: 58px; height: 58px;
+    border-radius: 50%; cursor: pointer; font-size: 1.5rem;
+    box-shadow: 0 8px 32px rgba(139,92,246,.45);
+    z-index: 190; transition: all .2s; display: flex; align-items: center; justify-content: center;
+  }
+  #chat-fab:hover { transform: scale(1.1); }
+
+  /* ─── PROGRESS ──────────────────────────── */
+  .progress-bar {
+    height: 4px; background: var(--borda); border-radius: 2px; margin: 8px 0 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--verde), var(--azul));
+    transition: width .5s;
+  }
+
+  .steps-row {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .step-chip {
+    background: var(--bg3); border-radius: 20px; padding: 4px 12px;
+    font-size: .8rem; color: var(--texto2); border: 1.5px solid transparent;
+  }
+  .step-chip.done { border-color: var(--verde); color: var(--verde); }
+  .step-chip.active { border-color: var(--amarelo); color: var(--amarelo); font-weight: 700; }
+
+  /* mobile */
+  #menu-toggle {
+    display: none; position: fixed; top: 14px; left: 14px; z-index: 300;
+    background: var(--bg2); border: 1.5px solid var(--borda);
+    color: var(--texto); border-radius: 8px; padding: 8px 12px;
+    cursor: pointer; font-size: 1.2rem;
+  }
+
+  @media(max-width:900px) {
+    #sidebar { transform: translateX(-100%); transition: transform .3s; }
+    #sidebar.open { transform: translateX(0); }
+    #main { margin-left: 0; }
+    #menu-toggle { display: flex; align-items: center; }
+    #content { padding: 20px 18px; }
+    #playground { grid-template-columns: 1fr; }
+    #preview-frame { border-left: none; border-top: 2px solid var(--borda); }
+    #chat-panel { width: 100%; }
+    #topbar { padding-left: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <h1>🌳 Aprenda DOM</h1>
+    <p>Do zero ao avançado, passo a passo</p>
+    <div class="progress-bar">
+      <div class="progress-fill" id="global-progress" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div id="menu-list"></div>
+</aside>
+
+<!-- MOBILE TOGGLE -->
+<button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <h2 id="topbar-title">Bem-vindo!</h2>
+    <div class="nav-btns">
+      <button id="btn-prev" onclick="changeLesson(-1)" disabled>← Anterior</button>
+      <button id="btn-next" onclick="changeLesson(1)">Próxima →</button>
+    </div>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<!-- CHAT PANEL -->
+<div id="chat-panel">
+  <div class="chat-header">
+    <h3>🤖 Assistente DOM</h3>
+    <button onclick="toggleChat()">✕</button>
+  </div>
+  <div id="chat-messages">
+    <div class="msg ai">
+      Oi! 👋 Sou seu assistente! Pode me perguntar <strong>qualquer coisa sobre DOM</strong> — pode ser dúvida simples ou difícil, tô aqui pra ajudar! 😊
+    </div>
+  </div>
+  <div class="chat-input-area">
+    <textarea id="chat-input" placeholder="Pergunta algo sobre DOM..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+    <button id="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<button id="chat-fab" onclick="toggleChat()" title="Tirar dúvidas com IA">🤖</button>
+
+<script>
+// ──────────────────────────────────────────────────────────────────────────
+// LIÇÕES
+// ──────────────────────────────────────────────────────────────────────────
+const lessons = [
+
+  // ═══ NÍVEL 1: FUNDAMENTOS ═══════════════════════════════════════════════
+  {
+    nivel: "🟢 Nível 1 — Fundamentos",
+    id: "o-que-e-dom",
+    title: "O que é o DOM?",
+    subtitle: "Entendendo a estrutura da página",
+    badge: "Início",
+    badgeColor: "#22c55e",
+    icon: "🌱",
+    code: `<!-- Clique em EXECUTAR para ver! -->
+<h1 id="titulo">Olá, Mundo!</h1>
+<p id="texto">Eu sou um parágrafo.</p>
+<button onclick="mudar()">Clique em mim!</button>
+
+<script>
+function mudar() {
+  // Aqui o JavaScript "pega" o elemento pelo id
+  var titulo = document.getElementById("titulo");
+  titulo.textContent = "Você clicou! 🎉";
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🏠</span>
+        <p>Imagina que uma página web é uma <strong>casa</strong>. Dentro dessa casa tem móveis: sofá, mesa, cadeira... cada coisa no seu lugar.</p>
+        <p>O <em>DOM</em> é o "mapa" dessa casa! Ele mostra quais "móveis" (elementos) existem e onde cada um está.</p>
+        <p>E o JavaScript é como você — a pessoa que pode <strong>pegar os móveis e mover de lugar!</strong> 😄</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📄 Toda página HTML vira uma árvore</div>
+        <p>Quando você escreve HTML, o navegador transforma isso em uma <strong>árvore de elementos</strong>. É assim:</p>
+        <pre>documento (a casa toda)
+├── &lt;html&gt; (as paredes)
+│   ├── &lt;head&gt; (a parte escondida)
+│   └── &lt;body&gt; (o que você vê)
+│       ├── &lt;h1&gt; Título
+│       ├── &lt;p&gt;  Texto
+│       └── &lt;button&gt; Botão</pre>
+        <p>Cada pedaço dessa árvore é chamado de <em>nó</em> (node). E o JavaScript pode <strong>mexer em qualquer nó!</strong></p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✏️ Tente você mesmo!</div>
+        <p>No editor abaixo, clique em <strong>Executar</strong> e veja o que acontece quando você clica no botão. Depois tente mudar a frase!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "document-get",
+    title: "Pegando elementos",
+    subtitle: "getElementById, querySelector e amigos",
+    badge: "Básico",
+    badgeColor: "#22c55e",
+    icon: "🎯",
+    code: `<h2 id="nome">João</h2>
+<p class="info">Tenho 10 anos</p>
+<p class="info">Gosto de videogame</p>
+<button onclick="testar()">Mostrar no console</button>
+
+<script>
+function testar() {
+  // Pega pelo ID (único na página)
+  var peloid = document.getElementById("nome");
+  
+  // Pega o PRIMEIRO com a classe .info
+  var primeiro = document.querySelector(".info");
+  
+  // Pega TODOS com a classe .info
+  var todos = document.querySelectorAll(".info");
+
+  peloid.style.color = "red";
+  primeiro.style.fontWeight = "bold";
+  
+  alert("Encontrei " + todos.length + " parágrafos com .info!");
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🔍</span>
+        <p>Para o JavaScript mexer num elemento, ele precisa <strong>encontrar ele primeiro</strong>. É como procurar seu brinquedo favorito no quarto!</p>
+        <p>O JavaScript tem várias formas de procurar. Vamos aprender as principais:</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📌 Formas de encontrar elementos</div>
+        <p><strong>1. Pelo ID</strong> — cada ID é único na página (como seu RG):</p>
+        <pre><span class="kw">var</span> elemento = <span class="fn">document.getElementById</span>(<span class="str">"meu-id"</span>);</pre>
+
+        <p><strong>2. querySelector</strong> — pega o <em>primeiro</em> que encontrar (usa CSS):</p>
+        <pre><span class="kw">var</span> elemento = <span class="fn">document.querySelector</span>(<span class="str">"#id"</span>);
+<span class="kw">var</span> elemento = <span class="fn">document.querySelector</span>(<span class="str">".classe"</span>);
+<span class="kw">var</span> elemento = <span class="fn">document.querySelector</span>(<span class="str">"p"</span>);</pre>
+
+        <p><strong>3. querySelectorAll</strong> — pega <em>todos</em> que encontrar (retorna lista):</p>
+        <pre><span class="kw">var</span> lista = <span class="fn">document.querySelectorAll</span>(<span class="str">".card"</span>);</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💡 Dica de ouro</div>
+        <p>Quando em dúvida, use sempre o <code>querySelector</code> — ele aceita qualquer seletor CSS que você já conhece!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "mudando-conteudo",
+    title: "Mudando o conteúdo",
+    subtitle: "textContent, innerHTML e value",
+    badge: "Básico",
+    badgeColor: "#22c55e",
+    icon: "✏️",
+    code: `<h1 id="titulo">Título original</h1>
+<div id="caixa">Conteúdo original</div>
+<input id="campo" type="text" value="Texto do campo">
+<br><br>
+<button onclick="mudarTexto()">Mudar texto</button>
+<button onclick="mudarHTML()">Mudar HTML</button>
+<button onclick="lerInput()">Ler input</button>
+
+<script>
+function mudarTexto() {
+  var titulo = document.getElementById("titulo");
+  // textContent = só texto puro, seguro!
+  titulo.textContent = "Título novo! 🎉";
+}
+
+function mudarHTML() {
+  var caixa = document.getElementById("caixa");
+  // innerHTML = pode colocar HTML dentro!
+  caixa.innerHTML = "<strong>Negrito!</strong> e <em>itálico</em> 🌈";
+}
+
+function lerInput() {
+  var campo = document.getElementById("campo");
+  // .value pega o que tem no input
+  alert("Você digitou: " + campo.value);
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">✏️</span>
+        <p>Agora que você sabe <em>encontrar</em> os elementos, vamos aprender a <strong>mudar o que tem dentro deles</strong>!</p>
+        <p>É como apagar o que está escrito numa lousa e escrever outra coisa.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📝 Três jeitos de mudar o conteúdo</div>
+
+        <p><strong>textContent</strong> — muda só o texto (mais seguro):</p>
+        <pre>elemento.<span class="atr">textContent</span> = <span class="str">"Novo texto"</span>;</pre>
+
+        <p><strong>innerHTML</strong> — muda o HTML completo (pode ter tags):</p>
+        <pre>elemento.<span class="atr">innerHTML</span> = <span class="str">"&lt;b&gt;Negrito&lt;/b&gt; normal"</span>;</pre>
+
+        <p><strong>value</strong> — para campos de formulário (input, textarea):</p>
+        <pre>input.<span class="atr">value</span> = <span class="str">"Novo valor"</span>;
+<span class="kw">var</span> digitado = input.<span class="atr">value</span>; <span class="cmt">// lê o que o usuário digitou</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚠️ textContent vs innerHTML</div>
+        <p>Use <em>textContent</em> quando quiser só texto. Use <em>innerHTML</em> quando precisar colocar elementos HTML. Nunca use innerHTML com dados que vêm do usuário (segurança!).</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "mudando-estilos",
+    title: "Mudando o estilo (CSS)",
+    subtitle: "style, classList e className",
+    badge: "Básico",
+    badgeColor: "#22c55e",
+    icon: "🎨",
+    code: `<style>
+  .destaque { background: yellow; font-size: 1.5em; padding: 8px; }
+  .vermelho  { color: red; }
+  .verde     { color: green; }
+  .oculto    { display: none; }
+</style>
+
+<p id="texto">Olha só que texto bonito!</p>
+<div id="caixa" style="padding:10px;border:2px solid #ccc;">
+  Eu posso desaparecer!
+</div>
+<br>
+<button onclick="realcar()">Realçar texto</button>
+<button onclick="trocarCor()">Trocar cor</button>
+<button onclick="esconder()">Esconder caixa</button>
+<button onclick="mostrar()">Mostrar caixa</button>
+
+<script>
+function realcar() {
+  var el = document.getElementById("texto");
+  el.classList.add("destaque"); // adiciona classe CSS
+}
+
+function trocarCor() {
+  var el = document.getElementById("texto");
+  el.classList.toggle("vermelho"); // liga/desliga
+  el.classList.toggle("verde");
+}
+
+function esconder() {
+  document.getElementById("caixa").classList.add("oculto");
+}
+
+function mostrar() {
+  document.getElementById("caixa").classList.remove("oculto");
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🎨</span>
+        <p>Com DOM você também pode <strong>mudar as cores, tamanhos e todo o visual</strong> da página em tempo real!</p>
+        <p>É como ter um controle remoto que muda a decoração da sua casa sem sair do lugar!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🖌️ Jeito 1: style direto</div>
+        <p>Coloca CSS diretamente no elemento (propriedades viram camelCase):</p>
+        <pre>elemento.<span class="atr">style.color</span> = <span class="str">"red"</span>;
+elemento.<span class="atr">style.fontSize</span> = <span class="str">"24px"</span>; <span class="cmt">// font-size → fontSize</span>
+elemento.<span class="atr">style.backgroundColor</span> = <span class="str">"blue"</span>;</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏷️ Jeito 2: classList (o melhor!)</div>
+        <pre>el.<span class="atr">classList</span>.<span class="fn">add</span>(<span class="str">"classe"</span>)    <span class="cmt">// adiciona</span>
+el.<span class="atr">classList</span>.<span class="fn">remove</span>(<span class="str">"classe"</span>) <span class="cmt">// remove</span>
+el.<span class="atr">classList</span>.<span class="fn">toggle</span>(<span class="str">"classe"</span>) <span class="cmt">// liga/desliga</span>
+el.<span class="atr">classList</span>.<span class="fn">contains</span>(<span class="str">"classe"</span>) <span class="cmt">// true/false</span></pre>
+        <p>Usar <em>classList</em> é melhor pois mantém os estilos separados no CSS!</p>
+      </div>
+    `
+  },
+
+  // ═══ NÍVEL 2: EVENTOS ════════════════════════════════════════════════════
+  {
+    nivel: "🟡 Nível 2 — Eventos",
+    id: "eventos-intro",
+    title: "O que são eventos?",
+    subtitle: "Click, mouseover, keypress e muito mais",
+    badge: "Intermediário",
+    badgeColor: "#fbbf24",
+    icon: "⚡",
+    code: `<h2 id="mensagem">Espere um evento...</h2>
+<button id="btn">Clique em mim!</button>
+<input id="campo" placeholder="Digite algo aqui">
+<div id="area" 
+  style="width:200px;height:80px;background:#ddd;margin-top:10px;display:flex;align-items:center;justify-content:center;">
+  Passe o mouse aqui
+</div>
+
+<script>
+// Jeito CERTO de adicionar eventos:
+var btn = document.getElementById("btn");
+
+btn.addEventListener("click", function() {
+  document.getElementById("mensagem").textContent = "Você clicou! 🖱️";
+});
+
+var campo = document.getElementById("campo");
+
+campo.addEventListener("input", function() {
+  document.getElementById("mensagem").textContent = 
+    "Você digitou: " + campo.value;
+});
+
+var area = document.getElementById("area");
+
+area.addEventListener("mouseenter", function() {
+  area.style.background = "#a78bfa";
+  area.textContent = "Oi! 👋";
+});
+
+area.addEventListener("mouseleave", function() {
+  area.style.background = "#ddd";
+  area.textContent = "Passe o mouse aqui";
+});
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">⚡</span>
+        <p>Eventos são <strong>coisas que acontecem na página</strong> — um clique, uma tecla pressionada, o mouse passando em cima de algo...</p>
+        <p>Você pode dizer pro JavaScript: <em>"Quando isso acontecer, faça aquilo!"</em></p>
+        <p>É como um alarme: quando o alarme toca, você acorda. O evento é o alarme!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Eventos mais comuns</div>
+        <pre><span class="cmt">// Mouse</span>
+<span class="str">"click"</span>      — clicou
+<span class="str">"dblclick"</span>   — clicou 2 vezes
+<span class="str">"mouseenter"</span> — mouse entrou
+<span class="str">"mouseleave"</span> — mouse saiu
+
+<span class="cmt">// Teclado</span>
+<span class="str">"keydown"</span>    — tecla apertada
+<span class="str">"keyup"</span>      — tecla soltada
+<span class="str">"input"</span>      — digitou algo (input/textarea)
+
+<span class="cmt">// Página</span>
+<span class="str">"load"</span>       — página carregou
+<span class="str">"submit"</span>     — formulário enviado</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔑 addEventListener — o jeito certo</div>
+        <pre>elemento.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, <span class="kw">function</span>() {
+  <span class="cmt">// seu código aqui</span>
+});</pre>
+        <p>Evite usar <code>onclick="..."</code> no HTML — o addEventListener é mais poderoso e organizado!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "event-object",
+    title: "O objeto Event",
+    subtitle: "Informações sobre o evento",
+    badge: "Intermediário",
+    badgeColor: "#fbbf24",
+    icon: "📦",
+    code: `<h3>Clique ou pressione teclas:</h3>
+<div id="area" 
+  style="width:100%;height:120px;background:#1e293b;
+  border:2px solid #475569;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:#94a3b8;font-size:0.9em;cursor:pointer;"
+  tabindex="0">
+  Clique aqui ou pressione uma tecla
+</div>
+<p id="info" style="margin-top:10px;font-size:0.9em;"></p>
+
+<script>
+var area = document.getElementById("area");
+var info = document.getElementById("info");
+
+// O 'e' (ou 'event') é o objeto com detalhes do evento!
+area.addEventListener("click", function(e) {
+  info.innerHTML = 
+    "🖱️ Clique em: X=" + e.clientX + 
+    ", Y=" + e.clientY +
+    "<br>Elemento clicado: &lt;" + e.target.tagName + "&gt;";
+  area.style.background = "#1e40af";
+});
+
+area.addEventListener("keydown", function(e) {
+  info.innerHTML = 
+    "⌨️ Tecla: <b>" + e.key + "</b>" +
+    " | Código: " + e.code +
+    " | Shift: " + e.shiftKey;
+  area.style.background = "#166534";
+});
+
+area.focus();
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">📦</span>
+        <p>Quando um evento acontece, o JavaScript te manda um "pacotinho" com <strong>informações sobre o que aconteceu</strong>.</p>
+        <p>Esse pacotinho se chama <em>objeto event</em>. Você pode chamá-lo de <code>e</code> ou <code>event</code>!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📌 Propriedades úteis do Event</div>
+        <pre><span class="fn">addEventListener</span>(<span class="str">"click"</span>, <span class="kw">function</span>(e) {
+  e.<span class="atr">target</span>        <span class="cmt">// elemento que foi clicado</span>
+  e.<span class="atr">clientX</span>       <span class="cmt">// posição X do mouse</span>
+  e.<span class="atr">clientY</span>       <span class="cmt">// posição Y do mouse</span>
+  e.<span class="fn">preventDefault</span>() <span class="cmt">// cancela ação padrão</span>
+  e.<span class="fn">stopPropagation</span>() <span class="cmt">// para de "subir"</span>
+});
+
+<span class="fn">addEventListener</span>(<span class="str">"keydown"</span>, <span class="kw">function</span>(e) {
+  e.<span class="atr">key</span>    <span class="cmt">// "a", "Enter", "ArrowUp"...</span>
+  e.<span class="atr">shiftKey</span> <span class="cmt">// true se Shift pressionado</span>
+  e.<span class="atr">ctrlKey</span>  <span class="cmt">// true se Ctrl pressionado</span>
+});</pre>
+      </div>
+    `
+  },
+
+  // ═══ NÍVEL 3: CRIANDO E REMOVENDO ELEMENTOS ══════════════════════════════
+  {
+    nivel: "🔵 Nível 3 — Criar e Remover",
+    id: "criar-elementos",
+    title: "Criando elementos",
+    subtitle: "createElement, appendChild e insertBefore",
+    badge: "Avançado",
+    badgeColor: "#3b82f6",
+    icon: "🏗️",
+    code: `<ul id="lista"></ul>
+<input id="novo-item" placeholder="Digite um item...">
+<button onclick="adicionar()">Adicionar</button>
+<button onclick="limpar()">Limpar tudo</button>
+
+<script>
+function adicionar() {
+  var input = document.getElementById("novo-item");
+  var texto = input.value.trim();
+  
+  if (!texto) return; // não adiciona vazio
+  
+  // 1. Cria o elemento
+  var li = document.createElement("li");
+  
+  // 2. Coloca o conteúdo
+  li.textContent = texto;
+  li.style.padding = "6px";
+  li.style.borderBottom = "1px solid #ccc";
+  li.style.cursor = "pointer";
+  
+  // 3. Clique para remover
+  li.addEventListener("click", function() {
+    li.remove(); // remove o próprio elemento!
+  });
+  
+  // 4. Adiciona na lista
+  var lista = document.getElementById("lista");
+  lista.appendChild(li);
+  
+  input.value = ""; // limpa o campo
+  input.focus();
+}
+
+function limpar() {
+  document.getElementById("lista").innerHTML = "";
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🏗️</span>
+        <p>Até agora mudamos coisas que <em>já existiam</em> na página. Mas e se quisermos <strong>criar coisas novas do zero</strong> com JavaScript?</p>
+        <p>É como usar blocos de LEGO — você cria a peça, configura ela, e aí encaixa na página!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔧 Passo a passo para criar</div>
+        <pre><span class="cmt">// 1. Cria o elemento</span>
+<span class="kw">var</span> div = <span class="fn">document.createElement</span>(<span class="str">"div"</span>);
+
+<span class="cmt">// 2. Configura</span>
+div.<span class="atr">textContent</span> = <span class="str">"Olá!"</span>;
+div.<span class="atr">className</span> = <span class="str">"minha-classe"</span>;
+div.<span class="atr">id</span> = <span class="str">"meu-id"</span>;
+
+<span class="cmt">// 3. Coloca na página</span>
+pai.<span class="fn">appendChild</span>(div);      <span class="cmt">// no final</span>
+pai.<span class="fn">prepend</span>(div);          <span class="cmt">// no início</span>
+pai.<span class="fn">insertBefore</span>(div, ref); <span class="cmt">// antes de ref</span>
+
+<span class="cmt">// Remover</span>
+div.<span class="fn">remove</span>();               <span class="cmt">// remove ele mesmo</span>
+pai.<span class="fn">removeChild</span>(div);      <span class="cmt">// pai remove o filho</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💡 Tente o exemplo!</div>
+        <p>O editor ao lado tem uma lista de tarefas simples. <strong>Clique num item da lista para removê-lo!</strong> Estude o código e veja como funciona.</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "atributos",
+    title: "Manipulando atributos",
+    subtitle: "getAttribute, setAttribute, dataset",
+    badge: "Avançado",
+    badgeColor: "#3b82f6",
+    icon: "🏷️",
+    code: `<img id="foto" src="https://placecats.com/200/150" 
+  alt="Um gato" width="200">
+
+<a id="link" href="https://example.com">Clique aqui</a>
+
+<div id="card" data-usuario="jean" data-nivel="3"
+  style="margin-top:10px;padding:10px;background:#1e293b;border-radius:8px;">
+  Card com data-attributes
+</div>
+
+<br>
+<button onclick="mudarImg()">Trocar imagem</button>
+<button onclick="lerData()">Ler data-*</button>
+<button onclick="desabilitarLink()">Desabilitar link</button>
+
+<script>
+function mudarImg() {
+  var img = document.getElementById("foto");
+  // getAttribute / setAttribute
+  var src = img.getAttribute("src");
+  img.setAttribute("src", "https://placecats.com/neo/200/150");
+  img.setAttribute("alt", "Outro gato");
+  img.setAttribute("title", "Troquei com setAttribute!");
+}
+
+function lerData() {
+  var card = document.getElementById("card");
+  // dataset acessa os data-* atributos
+  var usuario = card.dataset.usuario;
+  var nivel   = card.dataset.nivel;
+  card.textContent = "Usuário: " + usuario + " | Nível: " + nivel;
+  card.style.color = "#22c55e";
+}
+
+function desabilitarLink() {
+  var link = document.getElementById("link");
+  link.setAttribute("href", "#");
+  link.textContent = "Link desabilitado!";
+  link.style.color = "gray";
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🏷️</span>
+        <p>Elementos HTML têm <strong>atributos</strong> — como <code>src</code> de imagem, <code>href</code> de link, <code>disabled</code> de botão...</p>
+        <p>O JavaScript pode <em>ler</em> e <em>mudar</em> qualquer atributo!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔧 getAttribute e setAttribute</div>
+        <pre><span class="cmt">// Ler atributo</span>
+<span class="kw">var</span> src = img.<span class="fn">getAttribute</span>(<span class="str">"src"</span>);
+
+<span class="cmt">// Mudar atributo</span>
+img.<span class="fn">setAttribute</span>(<span class="str">"src"</span>, <span class="str">"nova-imagem.jpg"</span>);
+btn.<span class="fn">setAttribute</span>(<span class="str">"disabled"</span>, <span class="str">""</span>);
+
+<span class="cmt">// Remover atributo</span>
+btn.<span class="fn">removeAttribute</span>(<span class="str">"disabled"</span>);
+
+<span class="cmt">// Checar se existe</span>
+btn.<span class="fn">hasAttribute</span>(<span class="str">"disabled"</span>);</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📦 data-* e dataset (muito útil!)</div>
+        <pre><span class="cmt">// HTML:</span>
+<span class="tag">&lt;div</span> <span class="atr">data-id</span>=<span class="val">"42"</span> <span class="atr">data-nome</span>=<span class="val">"Maria"</span><span class="tag">&gt;&lt;/div&gt;</span>
+
+<span class="cmt">// JavaScript:</span>
+div.<span class="atr">dataset.id</span>   <span class="cmt">// "42"</span>
+div.<span class="atr">dataset.nome</span> <span class="cmt">// "Maria"</span>
+div.<span class="atr">dataset.id</span> = <span class="str">"99"</span>; <span class="cmt">// muda</span></pre>
+        <p><em>data-*</em> é ótimo pra guardar informações nos elementos sem precisar de variáveis extras!</p>
+      </div>
+    `
+  },
+
+  // ═══ NÍVEL 4: AVANÇADO ═══════════════════════════════════════════════════
+  {
+    nivel: "🔴 Nível 4 — Avançado",
+    id: "event-delegation",
+    title: "Delegação de eventos",
+    subtitle: "Um ouvinte para muitos elementos",
+    badge: "Avançado",
+    badgeColor: "#f97316",
+    icon: "🎯",
+    code: `<div id="container">
+  <h3>Lista de tarefas</h3>
+  <!-- Os itens vão aparecer aqui -->
+</div>
+
+<input id="nova" placeholder="Nova tarefa...">
+<button onclick="addTarefa()">Adicionar</button>
+
+<script>
+var container = document.getElementById("container");
+
+// Um ÚNICO addEventListener para TODOS os botões!
+// Isso é Delegação de Eventos 🎯
+container.addEventListener("click", function(e) {
+  
+  // e.target = o elemento que foi clicado
+  if (e.target.classList.contains("btn-remover")) {
+    e.target.closest("li").remove();
+  }
+  
+  if (e.target.classList.contains("btn-concluir")) {
+    var li = e.target.closest("li");
+    li.style.textDecoration = 
+      li.style.textDecoration === "line-through" 
+      ? "none" : "line-through";
+  }
+});
+
+var lista;
+
+function addTarefa() {
+  if (!lista) {
+    lista = document.createElement("ul");
+    lista.style.padding = "0";
+    container.appendChild(lista);
+  }
+  
+  var input = document.getElementById("nova");
+  if (!input.value.trim()) return;
+  
+  var li = document.createElement("li");
+  li.style.cssText = "list-style:none;padding:6px 0;display:flex;gap:8px;align-items:center";
+  li.innerHTML = 
+    '<span style="flex:1">' + input.value + '</span>' +
+    '<button class="btn-concluir" style="background:#22c55e;border:none;border-radius:4px;color:white;padding:3px 8px;cursor:pointer">✓</button>' +
+    '<button class="btn-remover" style="background:#ef4444;border:none;border-radius:4px;color:white;padding:3px 8px;cursor:pointer">✕</button>';
+  
+  lista.appendChild(li);
+  input.value = "";
+}
+
+// Adiciona algumas tarefas de exemplo
+["Estudar DOM", "Praticar JavaScript", "Fazer projeto"].forEach(t => {
+  document.getElementById("nova").value = t;
+  addTarefa();
+});
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🎯</span>
+        <p>Imagina que você tem 100 botões na tela e precisa que cada um faça algo quando clicado.</p>
+        <p>Você vai colocar 100 <code>addEventListener</code>? Claro que não! 😅</p>
+        <p><strong>Delegação de eventos</strong> é a solução: você coloca <em>um ouvinte no pai</em>, e ele escuta os filhos todos!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🧠 Como funciona?</div>
+        <p>Quando você clica num botão dentro de uma <code>&lt;ul&gt;</code>, o evento "sobe" para os elementos pai — isso se chama <em>event bubbling</em>.</p>
+        <pre><span class="cmt">// ❌ Jeito ruim (1 por elemento)</span>
+<span class="kw">var</span> btns = <span class="fn">querySelectorAll</span>(<span class="str">".btn"</span>);
+btns.<span class="fn">forEach</span>(btn => btn.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, fn));
+
+<span class="cmt">// ✅ Jeito bom (delegação)</span>
+lista.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, <span class="kw">function</span>(e) {
+  <span class="kw">if</span> (e.<span class="atr">target</span>.<span class="fn">matches</span>(<span class="str">".btn"</span>)) {
+    <span class="cmt">// faz algo</span>
+  }
+});</pre>
+        <p>Além de mais eficiente, funciona pra elementos <em>que ainda não existiam</em> quando o evento foi criado!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "traversing",
+    title: "Navegando na árvore",
+    subtitle: "parentElement, children, nextSibling",
+    badge: "Avançado",
+    badgeColor: "#f97316",
+    icon: "🌳",
+    code: `<div id="raiz" style="padding:10px;background:#0f172a;border-radius:8px;">
+  <h4>Pai</h4>
+  <div id="filho1" style="background:#1e3a5f;padding:8px;margin:5px;border-radius:6px;">
+    Filho 1
+    <span id="neto" style="background:#1e40af;padding:4px;border-radius:4px;display:inline-block;margin-left:8px;">Neto</span>
+  </div>
+  <div id="filho2" style="background:#1e3a5f;padding:8px;margin:5px;border-radius:6px;">Filho 2</div>
+  <div id="filho3" style="background:#1e3a5f;padding:8px;margin:5px;border-radius:6px;">Filho 3</div>
+</div>
+
+<br>
+<button onclick="verPai()">Pai do filho1</button>
+<button onclick="verIrmaos()">Irmão do filho1</button>
+<button onclick="verFilhos()">Filhos do raiz</button>
+<button onclick="closest()">closest() do neto</button>
+<p id="resultado" style="margin-top:10px;color:#22c55e;font-weight:bold;"></p>
+
+<script>
+var resultado = document.getElementById("resultado");
+
+function verPai() {
+  var el = document.getElementById("filho1");
+  var pai = el.parentElement;
+  resultado.textContent = "Pai: " + pai.id;
+  pai.style.border = "2px solid yellow";
+  setTimeout(() => pai.style.border = "", 1500);
+}
+
+function verIrmaos() {
+  var el = document.getElementById("filho1");
+  var proximo = el.nextElementSibling;
+  var anterior = el.previousElementSibling;
+  resultado.textContent = 
+    "Próximo: " + (proximo?.id || "nenhum") + 
+    " | Anterior: " + (anterior?.id || "nenhum");
+  if (proximo) proximo.style.border = "2px solid #f97316";
+  setTimeout(() => { if(proximo) proximo.style.border = "" }, 1500);
+}
+
+function verFilhos() {
+  var raiz = document.getElementById("raiz");
+  var filhos = raiz.children; // HTMLCollection
+  var nomes = Array.from(filhos).map(f => f.tagName + "#" + (f.id||"?")).join(", ");
+  resultado.textContent = filhos.length + " filhos: " + nomes;
+}
+
+function closest() {
+  var neto = document.getElementById("neto");
+  // sobe até encontrar um div
+  var divPai = neto.closest("div");
+  resultado.textContent = "closest(div): " + divPai.id;
+  divPai.style.border = "2px solid #8b5cf6";
+  setTimeout(() => divPai.style.border = "", 1500);
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🌳</span>
+        <p>A página é uma árvore: elementos têm <strong>pais, filhos e irmãos</strong>. Às vezes você tem um elemento e precisa chegar nos que estão ao redor.</p>
+        <p>Isso se chama <em>traversing</em> — "caminhar pela árvore"!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🧭 Propriedades de navegação</div>
+        <pre><span class="cmt">// Subir</span>
+el.<span class="atr">parentElement</span>          <span class="cmt">// pai direto</span>
+el.<span class="fn">closest</span>(<span class="str">".seletor"</span>)    <span class="cmt">// ancestral mais próximo</span>
+
+<span class="cmt">// Descer</span>
+el.<span class="atr">children</span>               <span class="cmt">// todos os filhos</span>
+el.<span class="atr">firstElementChild</span>      <span class="cmt">// primeiro filho</span>
+el.<span class="atr">lastElementChild</span>       <span class="cmt">// último filho</span>
+
+<span class="cmt">// Irmãos</span>
+el.<span class="atr">nextElementSibling</span>     <span class="cmt">// próximo irmão</span>
+el.<span class="atr">previousElementSibling</span> <span class="cmt">// irmão anterior</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⭐ closest() — o mais poderoso</div>
+        <p><em>closest()</em> sobe na árvore até encontrar um ancestral que bata com o seletor. Muito útil na delegação de eventos!</p>
+        <pre><span class="cmt">// Clicou num botão dentro de um card?</span>
+<span class="kw">var</span> card = btn.<span class="fn">closest</span>(<span class="str">".card"</span>);</pre>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "mutation-observer",
+    title: "MutationObserver",
+    subtitle: "Observando mudanças no DOM",
+    badge: "Expert",
+    badgeColor: "#8b5cf6",
+    icon: "🔬",
+    code: `<div id="alvo" style="min-height:60px;padding:14px;background:#1e293b;border:2px solid #334155;border-radius:8px;">
+  Vou observar este elemento!
+</div>
+
+<div id="log" style="margin-top:12px;font-size:0.8em;color:#94a3b8;max-height:180px;overflow-y:auto;background:#0f172a;padding:10px;border-radius:8px;font-family:monospace;">
+  [Log de mudanças aqui]
+</div>
+
+<br>
+<button onclick="addFilho()">Adicionar filho</button>
+<button onclick="mudarAtrib()">Mudar atributo</button>
+<button onclick="mudarTexto()">Mudar texto</button>
+
+<script>
+var alvo = document.getElementById("alvo");
+var log  = document.getElementById("log");
+var cont = 0;
+
+// Cria o observador
+var observer = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mut) {
+    cont++;
+    var msg = "#" + cont + " Tipo: " + mut.type;
+    
+    if (mut.type === "childList") {
+      msg += " | Adicionados: " + mut.addedNodes.length +
+             " | Removidos: " + mut.removedNodes.length;
+    }
+    if (mut.type === "attributes") {
+      msg += " | Atributo: " + mut.attributeName;
+    }
+    if (mut.type === "characterData") {
+      msg += " | Novo texto: " + mut.target.data.substring(0,20);
+    }
+    
+    var p = document.createElement("p");
+    p.style.color = "#22c55e";
+    p.style.margin = "2px 0";
+    p.textContent = msg;
+    log.insertBefore(p, log.firstChild);
+  });
+});
+
+// Configura o que observar
+observer.observe(alvo, {
+  childList: true,      // filhos adicionados/removidos
+  attributes: true,     // atributos mudados
+  characterData: true,  // texto mudado
+  subtree: true         // filhos dos filhos também
+});
+
+function addFilho() {
+  var d = document.createElement("div");
+  d.style.cssText = "background:#1e40af;padding:5px;margin:4px 0;border-radius:4px";
+  d.textContent = "Filho " + Date.now();
+  alvo.appendChild(d);
+}
+
+function mudarAtrib() {
+  alvo.style.borderColor = ["#22c55e","#f97316","#8b5cf6","#ef4444"][cont%4];
+}
+
+function mudarTexto() {
+  alvo.firstChild.data = "Texto mudado às " + new Date().toLocaleTimeString();
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🔬</span>
+        <p><strong>MutationObserver</strong> é como uma câmera de segurança pra um elemento — ele <em>avisa você toda vez que algo muda</em> nele.</p>
+        <p>Isso é muito útil em aplicações modernas: quando um componente externo modifica o DOM e você precisa reagir a isso.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📷 Como configurar</div>
+        <pre><span class="kw">var</span> observer = <span class="kw">new</span> <span class="fn">MutationObserver</span>(<span class="kw">function</span>(mutations) {
+  mutations.<span class="fn">forEach</span>(<span class="kw">function</span>(mut) {
+    console.<span class="fn">log</span>(mut.<span class="atr">type</span>); <span class="cmt">// childList | attributes | characterData</span>
+  });
+});
+
+observer.<span class="fn">observe</span>(elemento, {
+  childList:     <span class="kw">true</span>, <span class="cmt">// filhos add/remove</span>
+  attributes:    <span class="kw">true</span>, <span class="cmt">// atributos</span>
+  characterData: <span class="kw">true</span>, <span class="cmt">// texto</span>
+  subtree:       <span class="kw">true</span>  <span class="cmt">// todos os descendentes</span>
+});
+
+observer.<span class="fn">disconnect</span>(); <span class="cmt">// para de observar</span></pre>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "fragment-template",
+    title: "DocumentFragment e Template",
+    subtitle: "Inserção eficiente no DOM",
+    badge: "Expert",
+    badgeColor: "#8b5cf6",
+    icon: "🚀",
+    code: `<div id="container">
+  <p style="color:#94a3b8">Clique para adicionar 100 itens</p>
+</div>
+
+<button onclick="jeitoLento()">😴 Jeito lento (1 por 1)</button>
+<button onclick="jeitoRapido()">🚀 Jeito rápido (Fragment)</button>
+<button onclick="usarTemplate()">📋 Usar &lt;template&gt;</button>
+
+<template id="meu-template">
+  <div style="background:#1e3a5f;padding:8px;margin:4px 0;border-radius:6px;display:flex;justify-content:space-between">
+    <span class="nome-item">Item aqui</span>
+    <span style="color:#22c55e" class="num-item">#0</span>
+  </div>
+</template>
+
+<p id="tempo" style="color:#fbbf24;font-size:0.85em;margin-top:8px;"></p>
+
+<script>
+var container = document.getElementById("container");
+var tempo = document.getElementById("tempo");
+
+function limpar() {
+  container.innerHTML = "";
+}
+
+// ❌ Jeito lento: acessa DOM 100 vezes
+function jeitoLento() {
+  limpar();
+  var inicio = performance.now();
+  for (var i = 0; i < 100; i++) {
+    var div = document.createElement("div");
+    div.style.cssText = "background:#3b1515;padding:8px;margin:4px 0;border-radius:6px";
+    div.textContent = "Item lento #" + i;
+    container.appendChild(div); // reflow a cada vez!
+  }
+  tempo.textContent = "Lento: " + (performance.now() - inicio).toFixed(2) + "ms";
+}
+
+// ✅ Jeito rápido: monta tudo na memória, 1 acesso DOM
+function jeitoRapido() {
+  limpar();
+  var inicio = performance.now();
+  var fragment = document.createDocumentFragment();
+  
+  for (var i = 0; i < 100; i++) {
+    var div = document.createElement("div");
+    div.style.cssText = "background:#1e3a5f;padding:8px;margin:4px 0;border-radius:6px";
+    div.textContent = "Item rápido #" + i;
+    fragment.appendChild(div); // na memória!
+  }
+  
+  container.appendChild(fragment); // 1 acesso DOM!
+  tempo.textContent = "Rápido: " + (performance.now() - inicio).toFixed(2) + "ms";
+}
+
+function usarTemplate() {
+  limpar();
+  var tmpl = document.getElementById("meu-template");
+  var fragment = document.createDocumentFragment();
+  
+  for (var i = 0; i < 5; i++) {
+    var clone = tmpl.content.cloneNode(true); // clona o template
+    clone.querySelector(".nome-item").textContent = "Produto " + (i+1);
+    clone.querySelector(".num-item").textContent = "#" + (i*10 + 1);
+    fragment.appendChild(clone);
+  }
+  container.appendChild(fragment);
+  tempo.textContent = "Template clonado 5 vezes!";
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🚀</span>
+        <p>Cada vez que você muda algo no DOM, o navegador pode ter que <strong>redesenhar a página</strong>. Isso é lento!</p>
+        <p><em>DocumentFragment</em> é uma "caixa invisível" — você monta tudo nela primeiro, aí coloca de uma vez no DOM. Muito mais rápido!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📦 DocumentFragment</div>
+        <pre><span class="kw">var</span> frag = <span class="fn">document.createDocumentFragment</span>();
+
+<span class="kw">for</span> (<span class="kw">var</span> i = 0; i < 1000; i++) {
+  <span class="kw">var</span> li = <span class="fn">document.createElement</span>(<span class="str">"li"</span>);
+  li.<span class="atr">textContent</span> = <span class="str">"Item "</span> + i;
+  frag.<span class="fn">appendChild</span>(li); <span class="cmt">// memória</span>
+}
+
+lista.<span class="fn">appendChild</span>(frag); <span class="cmt">// 1 só acesso ao DOM!</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Template HTML</div>
+        <pre><span class="cmt">// HTML</span>
+<span class="tag">&lt;template</span> <span class="atr">id</span>=<span class="val">"card"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;div</span> <span class="atr">class</span>=<span class="val">"card"</span><span class="tag">&gt;</span>...<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;/template&gt;</span>
+
+<span class="cmt">// JS</span>
+<span class="kw">var</span> clone = tmpl.<span class="atr">content</span>.<span class="fn">cloneNode</span>(<span class="kw">true</span>);
+<span class="cmt">// personaliza o clone...</span>
+pai.<span class="fn">appendChild</span>(clone);</pre>
+      </div>
+    `
+  }
+];
+
+// ──────────────────────────────────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────────────────────────────────
+let currentIndex = 0;
+let chatHistory = [];
+
+// ──────────────────────────────────────────────────────────────────────────
+// BUILD SIDEBAR
+// ──────────────────────────────────────────────────────────────────────────
+function buildSidebar() {
+  const list = document.getElementById('menu-list');
+  list.innerHTML = '';
+  let currentNivel = null;
+
+  lessons.forEach((lesson, i) => {
+    if (lesson.nivel && lesson.nivel !== currentNivel) {
+      currentNivel = lesson.nivel;
+      const label = document.createElement('div');
+      label.className = 'nivel-label';
+      label.textContent = currentNivel;
+      list.appendChild(label);
+    }
+
+    const btn = document.createElement('button');
+    btn.className = 'lesson-btn' + (i === currentIndex ? ' active' : '');
+    btn.dataset.index = i;
+    btn.innerHTML = `
+      <span class="icon">${lesson.icon}</span>
+      <span>${lesson.title}</span>
+      ${lesson.badge ? `<span class="badge" style="background:${lesson.badgeColor}20;color:${lesson.badgeColor}">${lesson.badge}</span>` : ''}
+    `;
+    btn.onclick = () => goToLesson(i);
+    list.appendChild(btn);
+  });
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// RENDER LESSON
+// ──────────────────────────────────────────────────────────────────────────
+function renderLesson(index) {
+  const lesson = lessons[index];
+  const content = document.getElementById('content');
+
+  // progresso
+  const pct = Math.round(((index + 1) / lessons.length) * 100);
+  document.getElementById('global-progress').style.width = pct + '%';
+
+  // topbar
+  document.getElementById('topbar-title').textContent = lesson.icon + ' ' + lesson.title;
+  document.getElementById('btn-prev').disabled = index === 0;
+  document.getElementById('btn-next').disabled = index === lessons.length - 1;
+
+  content.innerHTML = `
+    <p style="color:var(--texto2);font-size:.8rem;margin-bottom:6px">Aula ${index+1} de ${lessons.length} &nbsp;·&nbsp; ${pct}% concluído</p>
+    <div class="lesson-title">${lesson.icon} ${lesson.title}</div>
+    <div class="lesson-subtitle">${lesson.subtitle}</div>
+    ${lesson.content()}
+    <div class="card" style="padding:0">
+      <div id="playground">
+        <div class="play-panel">
+          <div class="play-header">
+            <span>📝 Código</span>
+            <span style="color:var(--verde)">HTML + JavaScript</span>
+          </div>
+          <textarea id="code-editor" spellcheck="false">${lesson.code}</textarea>
+          <div class="play-footer">
+            <button class="btn btn-run" onclick="runCode()">▶ Executar</button>
+            <button class="btn btn-reset" onclick="resetCode()">↺ Resetar</button>
+            <button class="btn btn-ai" onclick="explainCode()">🤖 Explicar código</button>
+          </div>
+        </div>
+        <div class="play-panel">
+          <div class="play-header">
+            <span>👁️ Resultado</span>
+            <span style="color:var(--azul)">ao vivo</span>
+          </div>
+          <iframe id="preview-frame"></iframe>
+        </div>
+      </div>
+    </div>
+    <div style="height:60px"></div>
+  `;
+
+  // auto-run
+  setTimeout(runCode, 100);
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// PLAYGROUND
+// ──────────────────────────────────────────────────────────────────────────
+function runCode() {
+  const code = document.getElementById('code-editor').value;
+  const iframe = document.getElementById('preview-frame');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(`
+    <html><head>
+    <style>
+      body{font-family:system-ui,sans-serif;padding:14px;background:#fff;color:#111;font-size:14px;}
+      button{padding:6px 14px;margin:3px;border:none;border-radius:6px;cursor:pointer;background:#3b82f6;color:#fff;font-size:13px;}
+      button:hover{opacity:.8;}
+      input,textarea{padding:6px 10px;border:1.5px solid #ccc;border-radius:6px;font-size:13px;}
+      ul,ol{padding-left:20px;}
+    </style>
+    </head><body>${code}</body></html>
+  `);
+  doc.close();
+}
+
+function resetCode() {
+  document.getElementById('code-editor').value = lessons[currentIndex].code;
+  runCode();
+}
+
+function explainCode() {
+  const code = document.getElementById('code-editor').value;
+  document.getElementById('chat-input').value =
+    'Pode me explicar o que esse código faz? ```\n' + code + '\n```';
+  openChat();
+  sendChat();
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// NAVIGATION
+// ──────────────────────────────────────────────────────────────────────────
+function goToLesson(index) {
+  currentIndex = index;
+  renderLesson(index);
+  buildSidebar();
+  document.getElementById('content').scrollTop = 0;
+  window.scrollTo(0, 0);
+  closeSidebar();
+}
+
+function changeLesson(dir) {
+  const next = currentIndex + dir;
+  if (next >= 0 && next < lessons.length) goToLesson(next);
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// CHAT IA
+// ──────────────────────────────────────────────────────────────────────────
+function toggleChat() {
+  const panel = document.getElementById('chat-panel');
+  panel.classList.toggle('open');
+}
+function openChat() {
+  document.getElementById('chat-panel').classList.add('open');
+}
+
+function addMsg(text, role) {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  // render markdown simples
+  div.innerHTML = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+function addLoading() {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai msg-loading';
+  div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  return div;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMsg(text, 'user');
+  openChat();
+
+  const loading = addLoading();
+
+  const lessonCtx = lessons[currentIndex];
+  chatHistory.push({ role: 'user', content: text });
+
+  const systemPrompt = `Você é um professor de JavaScript/DOM super simpático e didático. 
+Responda SEMPRE em português brasileiro de forma simples, como se explicasse para uma criança de 10 anos curiosa.
+Use emojis 🎉, analogias do dia a dia, exemplos práticos e código quando necessário.
+O aluno está na aula: "${lessonCtx.title}" — sobre "${lessonCtx.subtitle}".
+Seja breve (máx 200 palavras) mas completo. Formate código com backticks.
+Se o aluno errar algo, corrija com gentileza e explique o motivo.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: chatHistory.slice(-10)
+      })
+    });
+
+    const data = await res.json();
+    loading.remove();
+
+    if (data.content && data.content[0]) {
+      const reply = data.content[0].text;
+      chatHistory.push({ role: 'assistant', content: reply });
+      addMsg(reply, 'ai');
+    } else {
+      addMsg('Ops! Algo deu errado. Tente novamente! 😅', 'ai');
+    }
+  } catch (err) {
+    loading.remove();
+    addMsg('❌ Erro de conexão. Verifique sua internet e tente de novo!', 'ai');
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// MOBILE
+// ──────────────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// textarea auto-resize
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────────────────────────────────
+buildSidebar();
+renderLesson(0);
+</script>
+</body>
+</html>
