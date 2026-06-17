@@ -233,6 +233,7 @@
     display: flex; align-items: center; justify-content: space-between;
   }
   .chat-header h3 { font-size: 1rem; font-weight: 700; color: #fff; }
+  .chat-header-btns { display: flex; gap: 6px; }
   .chat-header button {
     background: rgba(255,255,255,.2); border: none; color: #fff;
     width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
@@ -240,6 +241,26 @@
     transition: background .2s;
   }
   .chat-header button:hover { background: rgba(255,255,255,.35); }
+
+  .chat-setup {
+    padding: 18px; background: rgba(139,92,246,.08);
+    border-bottom: 1.5px solid var(--borda); font-size: .85rem; line-height: 1.6;
+  }
+  .chat-setup p { margin-bottom: 10px; color: var(--texto2); }
+  .chat-setup a { color: var(--azul); }
+  .chat-setup select {
+    width: 100%; background: var(--bg3); color: var(--texto);
+    border: 1.5px solid var(--borda); border-radius: 8px; padding: 8px 10px;
+    font-family: 'Baloo 2',sans-serif; font-size: .85rem; margin-bottom: 8px;
+  }
+  .chat-setup input {
+    width: 100%; background: var(--bg3); color: var(--texto);
+    border: 1.5px solid var(--borda); border-radius: 8px; padding: 8px 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: .8rem; margin-bottom: 8px;
+    outline: none;
+  }
+  .chat-setup input:focus { border-color: var(--roxo); }
+  .chat-setup .btn { width: 100%; }
 
   #chat-messages {
     flex: 1; overflow-y: auto; padding: 16px;
@@ -381,15 +402,34 @@
 <div id="chat-panel">
   <div class="chat-header">
     <h3>🤖 Assistente DOM</h3>
-    <button onclick="toggleChat()">✕</button>
+    <div class="chat-header-btns">
+      <button onclick="abrirConfigChat()" title="Configurar IA">⚙️</button>
+      <button onclick="toggleChat()" title="Fechar">✕</button>
+    </div>
   </div>
+
+  <div id="chat-setup" class="chat-setup" style="display:none">
+    <p><strong>Pra usar o assistente, escolhe um provedor de IA gratuito:</strong></p>
+    <select id="ai-provider">
+      <option value="gemini">Google Gemini (grátis, recomendado)</option>
+      <option value="anthropic">Anthropic Claude (precisa de créditos)</option>
+    </select>
+    <input id="ai-key" type="password" placeholder="Cole sua chave de API aqui">
+    <p id="ai-help">
+      Pega sua chave gratuita em
+      <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a>.
+      Ela fica salva só no seu navegador, ninguém mais vê.
+    </p>
+    <button class="btn btn-ai" onclick="salvarChave()">💾 Salvar e começar a usar</button>
+  </div>
+
   <div id="chat-messages">
     <div class="msg ai">
-      Oi! 👋 Sou seu assistente! Pode me perguntar <strong>qualquer coisa sobre DOM</strong> — pode ser dúvida simples ou difícil, tô aqui pra ajudar! 😊
+      Oi! 👋 Sou seu assistente! Pode me perguntar <strong>qualquer coisa sobre DOM, Arrays, JSON ou APIs</strong> — pode ser dúvida simples ou difícil, tô aqui pra ajudar! 😊
     </div>
   </div>
   <div class="chat-input-area">
-    <textarea id="chat-input" placeholder="Pergunta algo sobre DOM..." rows="1"
+    <textarea id="chat-input" placeholder="Pergunta algo..." rows="1"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
     <button id="chat-send" onclick="sendChat()">➤</button>
   </div>
@@ -1358,6 +1398,734 @@ lista.<span class="fn">appendChild</span>(frag); <span class="cmt">// 1 só aces
 pai.<span class="fn">appendChild</span>(clone);</pre>
       </div>
     `
+  },
+
+  // ═══ NÍVEL 5: ARRAYS ═════════════════════════════════════════════════════
+  {
+    nivel: "🟣 Nível 5 — Arrays",
+    id: "arrays-intro",
+    title: "O que é um Array?",
+    subtitle: "Sua primeira caixa de brinquedos",
+    badge: "Início",
+    badgeColor: "#22c55e",
+    icon: "📦",
+    code: `<h3>Minha caixa de brinquedos</h3>
+<div id="caixa" style="padding:10px;background:#1e293b;border-radius:8px;color:#fff;min-height:40px;"></div>
+
+<br>
+<button onclick="mostrarTudo()">Mostrar todos</button>
+<button onclick="mostrarPrimeiro()">Mostrar o 1º</button>
+<button onclick="mostrarUltimo()">Mostrar o último</button>
+<button onclick="contar()">Quantos tem?</button>
+
+<script>
+// Um array é uma LISTA de coisas, dentro de [ ]
+var brinquedos = ["Bola", "Carrinho", "Boneco", "Pipa"];
+
+var caixa = document.getElementById("caixa");
+
+function mostrarTudo() {
+  // Cada coisa tem um número (posição), comecando do 0!
+  caixa.innerHTML = 
+    "Posição 0: " + brinquedos[0] + "<br>" +
+    "Posição 1: " + brinquedos[1] + "<br>" +
+    "Posição 2: " + brinquedos[2] + "<br>" +
+    "Posição 3: " + brinquedos[3];
+}
+
+function mostrarPrimeiro() {
+  caixa.textContent = "O primeiro brinquedo é: " + brinquedos[0];
+}
+
+function mostrarUltimo() {
+  // length = quantidade de itens. O último é sempre length - 1
+  var posicaoUltimo = brinquedos.length - 1;
+  caixa.textContent = "O último brinquedo é: " + brinquedos[posicaoUltimo];
+}
+
+function contar() {
+  caixa.textContent = "Tenho " + brinquedos.length + " brinquedos na caixa!";
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🧸</span>
+        <p>Imagina uma <strong>caixa de brinquedos</strong>. Dentro dela você guarda várias coisas: uma bola, um carrinho, um boneco...</p>
+        <p>Um <em>array</em> é exatamente isso no JavaScript: <strong>uma caixa que guarda várias coisas juntas</strong>, na ordem que você quiser!</p>
+        <p>A gente escreve um array assim, com colchetes <code>[ ]</code> e vírgula entre as coisas:</p>
+        <pre><span class="kw">var</span> brinquedos = [<span class="str">"Bola"</span>, <span class="str">"Carrinho"</span>, <span class="str">"Boneco"</span>];</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔢 A posição começa do ZERO!</div>
+        <p>Isso é um pouco estranho no começo, mas é super importante: <strong>a primeira coisa do array está na posição 0</strong>, não na posição 1!</p>
+        <pre><span class="kw">var</span> lista = [<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>];
+
+lista[0] <span class="cmt">// "A"  ← primeiro</span>
+lista[1] <span class="cmt">// "B"  ← segundo</span>
+lista[2] <span class="cmt">// "C"  ← terceiro (e último)</span></pre>
+        <p>Pensa assim: a posição é "quantos passos eu preciso dar a partir do início". Pra chegar no primeiro, eu não preciso dar nenhum passo — por isso é 0!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📏 .length — quantas coisas tem na caixa</div>
+        <pre><span class="kw">var</span> lista = [<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>];
+lista.<span class="atr">length</span> <span class="cmt">// 3 — tem 3 coisas</span>
+
+<span class="cmt">// Pra pegar o ÚLTIMO item, sempre é length - 1:</span>
+lista[lista.<span class="atr">length</span> - 1] <span class="cmt">// "C"</span></pre>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "arrays-percorrer",
+    title: "Percorrendo um Array",
+    subtitle: "for, forEach e olhando item por item",
+    badge: "Básico",
+    badgeColor: "#22c55e",
+    icon: "🚶",
+    code: `<h3>Lista de animais</h3>
+<ul id="lista" style="padding-left:20px;"></ul>
+
+<button onclick="comFor()">Mostrar com FOR</button>
+<button onclick="comForEach()">Mostrar com forEach</button>
+
+<script>
+var animais = ["Cachorro", "Gato", "Passarinho", "Peixe"];
+var lista = document.getElementById("lista");
+
+function comFor() {
+  lista.innerHTML = "";
+  // O "for" repete um bloco de código várias vezes
+  // i começa em 0, e vai até NÃO ser menor que o tamanho do array
+  for (var i = 0; i < animais.length; i++) {
+    var li = document.createElement("li");
+    li.textContent = "Posição " + i + ": " + animais[i];
+    lista.appendChild(li);
+  }
+}
+
+function comForEach() {
+  lista.innerHTML = "";
+  // forEach é mais simples: "para CADA item, faça isso"
+  animais.forEach(function(animal, posicao) {
+    var li = document.createElement("li");
+    li.textContent = "Posição " + posicao + ": " + animal + " 🐾";
+    lista.appendChild(li);
+  });
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🚶</span>
+        <p>Imagina que você quer dar uma comidinha pra <strong>cada</strong> brinquedo de pelúcia da sua caixa. Você não vai fazer isso um por um escrevendo o código 50 vezes, né?</p>
+        <p>Você vai <strong>passear pela caixa toda</strong>, dando comida pra cada um. Isso se chama <em>"percorrer o array"</em>!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔁 Jeito 1: o "for" clássico</div>
+        <p>O <code>for</code> é como um contador que vai de 0 até o tamanho da lista, repetindo o código:</p>
+        <pre><span class="kw">for</span> (<span class="kw">var</span> i = 0; i < lista.<span class="atr">length</span>; i++) {
+  console.<span class="fn">log</span>(lista[i]); <span class="cmt">// lista[0], lista[1], lista[2]...</span>
+}</pre>
+        <p>Lê assim: <em>"comece com i = 0, continue enquanto i for menor que o tamanho, e aumente i de 1 em 1"</em>.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✨ Jeito 2: forEach (mais moderno e fácil de ler)</div>
+        <pre>lista.<span class="fn">forEach</span>(<span class="kw">function</span>(item, posicao) {
+  console.<span class="fn">log</span>(item, posicao);
+});</pre>
+        <p><code>forEach</code> já passa o item e a posição prontinhos pra você, sem precisar contar nada. Pra maioria dos casos, é o jeito preferido hoje em dia!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "arrays-modificar",
+    title: "Adicionando e removendo",
+    subtitle: "push, pop, shift, unshift, splice",
+    badge: "Básico",
+    badgeColor: "#22c55e",
+    icon: "➕",
+    code: `<h3>Lista de compras</h3>
+<ul id="lista" style="padding-left:20px;"></ul>
+<p id="info" style="color:#94a3b8;font-size:0.85em"></p>
+
+<button onclick="addFim()">push (add no fim)</button>
+<button onclick="addInicio()">unshift (add no início)</button>
+<button onclick="remFim()">pop (remove o fim)</button>
+<button onclick="remInicio()">shift (remove o início)</button>
+
+<script>
+var compras = ["Arroz", "Feijão", "Leite"];
+
+function render() {
+  var lista = document.getElementById("lista");
+  lista.innerHTML = "";
+  compras.forEach(function(item) {
+    var li = document.createElement("li");
+    li.textContent = item;
+    lista.appendChild(li);
+  });
+  document.getElementById("info").textContent = 
+    "Array atual: [" + compras.join(", ") + "]";
+}
+
+function addFim() {
+  // push adiciona no FINAL do array
+  compras.push("Banana");
+  render();
+}
+
+function addInicio() {
+  // unshift adiciona no INÍCIO do array
+  compras.unshift("Água");
+  render();
+}
+
+function remFim() {
+  // pop remove o ÚLTIMO item e devolve ele
+  var removido = compras.pop();
+  alert("Removi: " + removido);
+  render();
+}
+
+function remInicio() {
+  // shift remove o PRIMEIRO item e devolve ele
+  var removido = compras.shift();
+  alert("Removi: " + removido);
+  render();
+}
+
+render();
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">➕</span>
+        <p>Uma caixa de brinquedos não fica sempre igual: você <strong>coloca</strong> brinquedos novos e <strong>tira</strong> os que não quer mais.</p>
+        <p>O array tem "comandos mágicos" pra isso. Os 4 mais usados:</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎮 Os 4 comandos principais</div>
+        <pre><span class="kw">var</span> lista = [<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>];
+
+lista.<span class="fn">push</span>(<span class="str">"D"</span>);    <span class="cmt">// adiciona no FIM:    [A,B,C,D]</span>
+lista.<span class="fn">unshift</span>(<span class="str">"Z"</span>); <span class="cmt">// adiciona no INÍCIO: [Z,A,B,C,D]</span>
+lista.<span class="fn">pop</span>();         <span class="cmt">// remove o FIM:       [Z,A,B,C]</span>
+lista.<span class="fn">shift</span>();       <span class="cmt">// remove o INÍCIO:    [A,B,C]</span></pre>
+        <p>Pensa assim: <strong>push</strong> "empurra" pro fim. <strong>pop</strong> "estoura" o de cima (o último). <strong>shift</strong> e <strong>unshift</strong> fazem a mesma coisa, só que no começo.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✂️ splice — o canivete suíço</div>
+        <p>Pra remover ou adicionar coisas <em>no meio</em> do array, usamos <code>splice</code>:</p>
+        <pre><span class="cmt">// remove 1 item a partir da posição 2</span>
+lista.<span class="fn">splice</span>(2, 1);
+
+<span class="cmt">// na posição 1, remove 0 itens e ADICIONA "Novo"</span>
+lista.<span class="fn">splice</span>(1, 0, <span class="str">"Novo"</span>);</pre>
+        <p>É mais avançado, mas guarda esse nome — ele resolve quase tudo!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "arrays-map-filter",
+    title: "map, filter e find",
+    subtitle: "Transformando e filtrando listas",
+    badge: "Intermediário",
+    badgeColor: "#fbbf24",
+    icon: "🔍",
+    code: `<h3>Lista de números</h3>
+<p id="original" style="color:#94a3b8"></p>
+<p id="resultado" style="color:#22c55e;font-weight:bold;min-height:24px"></p>
+
+<button onclick="usarMap()">map: dobrar todos</button>
+<button onclick="usarFilter()">filter: só os pares</button>
+<button onclick="usarFind()">find: o primeiro > 5</button>
+
+<script>
+var numeros = [1, 2, 3, 4, 5, 6, 7, 8];
+
+document.getElementById("original").textContent = 
+  "Lista original: [" + numeros.join(", ") + "]";
+
+function usarMap() {
+  // map cria um NOVO array, transformando cada item
+  var dobrados = numeros.map(function(n) {
+    return n * 2;
+  });
+  document.getElementById("resultado").textContent = 
+    "Dobrados: [" + dobrados.join(", ") + "]";
+}
+
+function usarFilter() {
+  // filter cria um NOVO array, só com os que passam no teste
+  var pares = numeros.filter(function(n) {
+    return n % 2 === 0; // resto da divisão por 2 é 0?
+  });
+  document.getElementById("resultado").textContent = 
+    "Só pares: [" + pares.join(", ") + "]";
+}
+
+function usarFind() {
+  // find acha só o PRIMEIRO item que passa no teste
+  var encontrado = numeros.find(function(n) {
+    return n > 5;
+  });
+  document.getElementById("resultado").textContent = 
+    "Primeiro maior que 5: " + encontrado;
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🔍</span>
+        <p>Imagina que você tem uma caixa de Legos de cores variadas, e quer:</p>
+        <p>1) pintar todos de outra cor, 2) separar só os vermelhos, ou 3) achar o primeiro Lego azul.</p>
+        <p>Pra isso, o array tem 3 superpoderes: <strong>map</strong>, <strong>filter</strong> e <strong>find</strong>!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎨 map — transforma cada item</div>
+        <p><code>map</code> passa por cada item e cria um <strong>array novo</strong> com o resultado da transformação:</p>
+        <pre><span class="kw">var</span> numeros = [1, 2, 3];
+<span class="kw">var</span> dobrados = numeros.<span class="fn">map</span>(<span class="kw">function</span>(n) {
+  <span class="kw">return</span> n * 2;
+});
+<span class="cmt">// dobrados = [2, 4, 6]</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🚦 filter — escolhe só alguns</div>
+        <p><code>filter</code> testa cada item: se a função devolver <code>true</code>, o item fica; se <code>false</code>, sai fora.</p>
+        <pre><span class="kw">var</span> numeros = [1, 2, 3, 4, 5, 6];
+<span class="kw">var</span> pares = numeros.<span class="fn">filter</span>(<span class="kw">function</span>(n) {
+  <span class="kw">return</span> n % 2 === 0; <span class="cmt">// só os divisíveis por 2</span>
+});
+<span class="cmt">// pares = [2, 4, 6]</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎯 find — acha só o primeiro</div>
+        <pre><span class="kw">var</span> numeros = [1, 2, 3, 8, 9];
+<span class="kw">var</span> achado = numeros.<span class="fn">find</span>(<span class="kw">function</span>(n) {
+  <span class="kw">return</span> n > 5;
+});
+<span class="cmt">// achado = 8 (o primeiro maior que 5)</span></pre>
+        <p>Esses três são os métodos de array mais usados no JavaScript moderno — vale muito a pena praticar!</p>
+      </div>
+    `
+  },
+
+  // ═══ NÍVEL 6: JSON ═══════════════════════════════════════════════════════
+  {
+    nivel: "🟠 Nível 6 — JSON",
+    id: "json-intro",
+    title: "O que é JSON?",
+    subtitle: "A ficha de identificação dos dados",
+    badge: "Intermediário",
+    badgeColor: "#fbbf24",
+    icon: "🗂️",
+    code: `<h3>Ficha de um personagem</h3>
+<div id="ficha" style="padding:14px;background:#1e293b;border-radius:8px;"></div>
+
+<button onclick="mostrarFicha()">Mostrar ficha</button>
+<button onclick="mudarNome()">Mudar nome</button>
+<button onclick="verJSON()">Ver como JSON (texto)</button>
+
+<script>
+// Um objeto é como uma "ficha" — tem campos com nome (chave) e valor
+var personagem = {
+  nome: "Mario",
+  vidas: 3,
+  poder: "Cogumelo",
+  amigo: true
+};
+
+function mostrarFicha() {
+  var ficha = document.getElementById("ficha");
+  ficha.innerHTML = 
+    "<b>Nome:</b> " + personagem.nome + "<br>" +
+    "<b>Vidas:</b> " + personagem.vidas + "<br>" +
+    "<b>Poder:</b> " + personagem.poder + "<br>" +
+    "<b>É amigo?</b> " + personagem.amigo;
+}
+
+function mudarNome() {
+  personagem.nome = "Luigi";
+  personagem.vidas = personagem.vidas - 1; // perdeu uma vida
+  mostrarFicha();
+}
+
+function verJSON() {
+  // JSON.stringify transforma o objeto em TEXTO
+  var texto = JSON.stringify(personagem, null, 2);
+  document.getElementById("ficha").innerHTML = 
+    "<pre style='white-space:pre-wrap'>" + texto + "</pre>";
+}
+
+mostrarFicha();
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🗂️</span>
+        <p>Imagina a <strong>ficha de um personagem de videogame</strong>: Nome, Vidas, Poder... cada informação tem um nome (rótulo) e um valor.</p>
+        <p>No JavaScript, isso se chama <em>objeto</em>, e se escreve com chaves <code>{ }</code>:</p>
+        <pre><span class="kw">var</span> personagem = {
+  nome: <span class="str">"Mario"</span>,
+  vidas: 3,
+  poder: <span class="str">"Cogumelo"</span>
+};</pre>
+        <p>Pra pegar um valor, usa ponto: <code>personagem.nome</code> → "Mario"</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📨 E o JSON, o que é?</div>
+        <p><strong>JSON</strong> (JavaScript Object Notation) é basicamente esse mesmo objeto, mas <strong>escrito como texto puro</strong> — pra poder ser enviado pela internet, salvo em arquivo, etc.</p>
+        <p>É como tirar uma "foto" do objeto em formato de texto:</p>
+        <pre><span class="cmt">// Objeto JavaScript (na memória)</span>
+{ nome: <span class="str">"Mario"</span>, vidas: 3 }
+
+<span class="cmt">// JSON (texto, pra enviar/guardar)</span>
+<span class="str">'{"nome":"Mario","vidas":3}'</span></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔄 Convertendo entre os dois</div>
+        <pre><span class="cmt">// Objeto → texto JSON</span>
+<span class="kw">var</span> texto = <span class="fn">JSON.stringify</span>(personagem);
+
+<span class="cmt">// Texto JSON → objeto de novo</span>
+<span class="kw">var</span> objeto = <span class="fn">JSON.parse</span>(texto);</pre>
+        <p>Essa troca de "objeto" para "texto" e vice-versa é a base de <strong>tudo</strong> que a internet troca de dados — toda API usa JSON!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "json-arrays-objetos",
+    title: "Arrays de objetos",
+    subtitle: "Combinando os dois superpoderes",
+    badge: "Intermediário",
+    badgeColor: "#fbbf24",
+    icon: "🧩",
+    code: `<h3>Lista de personagens</h3>
+<div id="lista"></div>
+
+<button onclick="renderizar()">Mostrar todos</button>
+<button onclick="soVivos()">Só os com vida</button>
+<button onclick="somarVidas()">Somar todas as vidas</button>
+
+<script>
+// Um ARRAY de OBJETOS - a combinação mais usada em programação!
+var personagens = [
+  { nome: "Mario",  vidas: 3, time: "Cogumelo" },
+  { nome: "Luigi",  vidas: 0, time: "Cogumelo" },
+  { nome: "Peach",  vidas: 2, time: "Castelo"   },
+  { nome: "Bowser", vidas: 5, time: "Vilão"     }
+];
+
+function renderizar() {
+  var lista = document.getElementById("lista");
+  lista.innerHTML = "";
+  
+  personagens.forEach(function(p) {
+    var div = document.createElement("div");
+    div.style.cssText = "padding:8px;margin:4px 0;background:#1e3a5f;border-radius:6px";
+    div.innerHTML = "<b>" + p.nome + "</b> — " + p.vidas + " vidas (" + p.time + ")";
+    lista.appendChild(div);
+  });
+}
+
+function soVivos() {
+  var lista = document.getElementById("lista");
+  lista.innerHTML = "";
+  
+  // filter pra pegar só quem tem vidas > 0
+  var vivos = personagens.filter(function(p) {
+    return p.vidas > 0;
+  });
+  
+  vivos.forEach(function(p) {
+    var div = document.createElement("div");
+    div.style.cssText = "padding:8px;margin:4px 0;background:#166534;border-radius:6px";
+    div.textContent = p.nome + " está vivo com " + p.vidas + " vidas!";
+    lista.appendChild(div);
+  });
+}
+
+function somarVidas() {
+  // reduce "junta" tudo em um único valor
+  var total = personagens.reduce(function(soma, p) {
+    return soma + p.vidas;
+  }, 0); // 0 é o valor inicial da soma
+  
+  document.getElementById("lista").innerHTML = 
+    "<h4>Total de vidas de todos: " + total + "</h4>";
+}
+
+renderizar();
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🧩</span>
+        <p>Agora vem a combinação mais poderosa: um <strong>array de fichas</strong>! Imagina uma caixa onde cada brinquedo tem sua própria ficha de identificação.</p>
+        <pre><span class="kw">var</span> personagens = [
+  { nome: <span class="str">"Mario"</span>, vidas: 3 },
+  { nome: <span class="str">"Luigi"</span>, vidas: 0 }
+];
+
+personagens[0].nome <span class="cmt">// "Mario"</span>
+personagens[1].vidas <span class="cmt">// 0</span></pre>
+        <p>Isso é <strong>exatamente</strong> como APIs de internet te entregam informação — uma lista de produtos, usuários, mensagens...</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">➕ reduce — somar/juntar tudo em um valor</div>
+        <p><code>reduce</code> é o mais avançado dos três. Ele "anda" pela lista juntando um resultado, item por item:</p>
+        <pre><span class="kw">var</span> numeros = [1, 2, 3, 4];
+<span class="kw">var</span> soma = numeros.<span class="fn">reduce</span>(<span class="kw">function</span>(acumulado, atual) {
+  <span class="kw">return</span> acumulado + atual;
+}, 0); <span class="cmt">// 0 = valor inicial</span>
+<span class="cmt">// soma = 10</span></pre>
+        <p>Pensa assim: começa com 0 na mão, vai item por item somando ao que já tinha. No fim, sobra o total!</p>
+      </div>
+    `
+  },
+
+  // ═══ NÍVEL 7: APIs ═══════════════════════════════════════════════════════
+  {
+    nivel: "🔴 Nível 7 — Consumindo APIs",
+    id: "fetch-intro",
+    title: "O que é uma API?",
+    subtitle: "Pedindo informação pela internet",
+    badge: "Avançado",
+    badgeColor: "#f97316",
+    icon: "🌐",
+    code: `<h3>Pegando uma piada da internet</h3>
+<div id="resultado" style="padding:14px;background:#1e293b;border-radius:8px;min-height:60px;">
+  Clique no botão pra buscar!
+</div>
+
+<button onclick="buscarPiada()">🎲 Buscar piada</button>
+
+<script>
+function buscarPiada() {
+  var resultado = document.getElementById("resultado");
+  resultado.textContent = "Buscando... ⏳";
+  
+  // fetch() faz um PEDIDO pra um endereço na internet
+  fetch("https://official-joke-api.appspot.com/random_joke")
+    .then(function(resposta) {
+      // a resposta vem "crua", precisa transformar em objeto JS
+      return resposta.json();
+    })
+    .then(function(piada) {
+      // agora "piada" é um objeto normal do JavaScript!
+      resultado.innerHTML = 
+        "<b>" + piada.setup + "</b><br><br>😄 " + piada.punchline;
+    })
+    .catch(function(erro) {
+      resultado.textContent = "Ops! Erro: " + erro.message;
+    });
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🌐</span>
+        <p>Imagina que você quer saber a previsão do tempo. Você não sabe fazer essa conta, então você <strong>pergunta pra alguém que sabe</strong> — tipo perguntar pro seu pai.</p>
+        <p>Uma <strong>API</strong> é um "lugar na internet" que sabe responder perguntas: tempo, piadas, preços, notícias... Você manda um pedido, ela te devolve a resposta (geralmente em JSON, que você já aprendeu!).</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📮 fetch() — o carteiro do JavaScript</div>
+        <p><code>fetch</code> é a função que <strong>busca</strong> informação de um endereço (URL) na internet:</p>
+        <pre><span class="fn">fetch</span>(<span class="str">"https://endereco-da-api.com/dados"</span>)
+  .<span class="fn">then</span>(<span class="kw">function</span>(resposta) {
+    <span class="kw">return</span> resposta.<span class="fn">json</span>(); <span class="cmt">// transforma em objeto JS</span>
+  })
+  .<span class="fn">then</span>(<span class="kw">function</span>(dados) {
+    console.<span class="fn">log</span>(dados); <span class="cmt">// já pode usar normal!</span>
+  })
+  .<span class="fn">catch</span>(<span class="kw">function</span>(erro) {
+    console.<span class="fn">log</span>(<span class="str">"Deu erro:"</span>, erro);
+  });</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🕐 Por que tem ".then"?</div>
+        <p>Buscar algo na internet <strong>demora</strong> (às vezes 1 segundo, às vezes mais). O JavaScript não fica "parado" esperando — ele continua fazendo outras coisas e, <em>quando a resposta chegar</em>, ele executa o que está dentro do <code>.then()</code>.</p>
+        <p>Isso se chama <em>assíncrono</em>: "vai fazer outra coisa, e quando a resposta chegar, eu te aviso"!</p>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "fetch-async-await",
+    title: "async/await",
+    subtitle: "Um jeito mais simples de escrever fetch",
+    badge: "Avançado",
+    badgeColor: "#f97316",
+    icon: "⏳",
+    code: `<h3>Buscando dados de um usuário</h3>
+<div id="resultado" style="padding:14px;background:#1e293b;border-radius:8px;min-height:80px;">
+  Clique no botão!
+</div>
+
+<button onclick="buscarUsuario()">👤 Buscar usuário aleatório</button>
+
+<script>
+// async antes da function = "essa função vai esperar coisas"
+async function buscarUsuario() {
+  var resultado = document.getElementById("resultado");
+  resultado.textContent = "Buscando... ⏳";
+  
+  try {
+    // await = "espera essa linha terminar antes de continuar"
+    var resposta = await fetch("https://randomuser.me/api/");
+    var dados = await resposta.json();
+    
+    var usuario = dados.results[0];
+    
+    resultado.innerHTML = 
+      "<img src='" + usuario.picture.large + "' style='border-radius:50%;width:80px'><br>" +
+      "<b>Nome:</b> " + usuario.name.first + " " + usuario.name.last + "<br>" +
+      "<b>Email:</b> " + usuario.email + "<br>" +
+      "<b>País:</b> " + usuario.location.country;
+      
+  } catch (erro) {
+    resultado.textContent = "Erro ao buscar: " + erro.message;
+  }
+}
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">⏳</span>
+        <p>O <code>.then()</code> funciona bem, mas pode ficar confuso quando você precisa de <em>vários</em> pedidos em sequência. <code>async/await</code> é um jeito de escrever a mesma coisa, só que parece código "normal", de cima para baixo!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔑 As duas palavras mágicas</div>
+        <pre><span class="kw">async function</span> minhaFuncao() {
+  <span class="kw">var</span> resposta = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"url-aqui"</span>);
+  <span class="kw">var</span> dados = <span class="kw">await</span> resposta.<span class="fn">json</span>();
+  console.<span class="fn">log</span>(dados);
+}</pre>
+        <p><strong>async</strong> antes da função: avisa "essa função vai ter espera dentro dela".</p>
+        <p><strong>await</strong> antes do fetch: "espera essa linha terminar, só depois vai pra próxima".</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🛟 try/catch — a rede de segurança</div>
+        <p>Quando usamos <code>await</code>, trocamos o <code>.catch()</code> por um bloco <code>try/catch</code>, que "tenta" o código e "pega" o erro se algo der errado:</p>
+        <pre><span class="kw">try</span> {
+  <span class="kw">var</span> dados = <span class="kw">await</span> <span class="fn">fetch</span>(url);
+  <span class="cmt">// se chegou até aqui, deu certo!</span>
+} <span class="kw">catch</span> (erro) {
+  <span class="cmt">// se algo quebrou, cai aqui</span>
+  console.<span class="fn">log</span>(<span class="str">"Algo deu errado:"</span>, erro);
+}</pre>
+      </div>
+    `
+  },
+
+  {
+    nivel: null,
+    id: "fetch-projeto-final",
+    title: "Projeto final: Buscador de países",
+    subtitle: "Juntando DOM + Arrays + JSON + API",
+    badge: "Expert",
+    badgeColor: "#8b5cf6",
+    icon: "🏆",
+    code: `<h3>🌍 Buscador de países</h3>
+<input id="busca" placeholder="Digite o nome de um país (ex: brazil)" style="width:250px">
+<button onclick="buscarPais()">Buscar</button>
+
+<div id="resultados" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;"></div>
+
+<script>
+var input = document.getElementById("busca");
+var resultadosDiv = document.getElementById("resultados");
+
+// Permite buscar com Enter também
+input.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") buscarPais();
+});
+
+async function buscarPais() {
+  var nome = input.value.trim();
+  if (!nome) return;
+  
+  resultadosDiv.innerHTML = "Buscando... ⏳";
+  
+  try {
+    var resposta = await fetch("https://restcountries.com/v3.1/name/" + nome);
+    
+    if (!resposta.ok) {
+      resultadosDiv.innerHTML = "❌ País não encontrado!";
+      return;
+    }
+    
+    var paises = await resposta.json(); // isso é um ARRAY de objetos!
+    
+    resultadosDiv.innerHTML = ""; // limpa
+    
+    // Pega só os primeiros 4 resultados, usando slice
+    var primeiros = paises.slice(0, 4);
+    
+    primeiros.forEach(function(pais) {
+      var card = document.createElement("div");
+      card.style.cssText = 
+        "background:#1e293b;border-radius:10px;padding:12px;width:200px;";
+      
+      card.innerHTML = 
+        "<img src='" + pais.flags.png + "' style='width:100%;border-radius:6px'><br>" +
+        "<b>" + pais.name.common + "</b><br>" +
+        "Capital: " + (pais.capital ? pais.capital[0] : "?") + "<br>" +
+        "População: " + pais.population.toLocaleString("pt-BR") + "<br>" +
+        "Região: " + pais.region;
+      
+      resultadosDiv.appendChild(card);
+    });
+    
+  } catch (erro) {
+    resultadosDiv.innerHTML = "❌ Erro: " + erro.message;
+  }
+}
+
+// busca inicial de exemplo
+input.value = "brazil";
+buscarPais();
+<\/script>`,
+    content: () => `
+      <div class="explain-box">
+        <span class="emoji-big">🏆</span>
+        <p>Chegou a hora de juntar <strong>tudo</strong> que você aprendeu! Esse projeto usa:</p>
+        <p>📦 <em>DOM</em> pra criar e mostrar elementos, 🗂️ <em>Arrays e objetos</em> pra organizar os dados, 🌐 <em>fetch + async/await</em> pra buscar informação real da internet!</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🧠 Como o código pensa, passo a passo</div>
+        <p>1. O usuário digita um país e clica em buscar.</p>
+        <p>2. <code>fetch</code> manda o pedido pra uma API real de países (restcountries.com).</p>
+        <p>3. A resposta chega como um <strong>array de objetos</strong> — cada objeto é um país.</p>
+        <p>4. Usamos <code>slice(0, 4)</code> pra pegar só os 4 primeiros resultados.</p>
+        <p>5. Com <code>forEach</code>, criamos um "cartão" (createElement) pra cada país e colocamos na tela.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎉 Você terminou os fundamentos!</div>
+        <p>Se você entendeu esse projeto, você já sabe o suficiente pra começar a construir <strong>aplicações reais</strong> com JavaScript puro. O próximo passo natural seria aprender frameworks como React — mas agora você entende o que está acontecendo "por debaixo do capô"!</p>
+      </div>
+    `
   }
 ];
 
@@ -1501,22 +2269,69 @@ function changeLesson(dir) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// CHAT IA
+// CHAT IA — funciona com chave do próprio usuário (Gemini grátis ou Anthropic)
 // ──────────────────────────────────────────────────────────────────────────
 function toggleChat() {
   const panel = document.getElementById('chat-panel');
   panel.classList.toggle('open');
+  if (panel.classList.contains('open') && !getApiKey()) {
+    abrirConfigChat();
+  }
 }
 function openChat() {
   document.getElementById('chat-panel').classList.add('open');
+  if (!getApiKey()) abrirConfigChat();
+}
+
+function getApiKey() {
+  return localStorage.getItem('dom_ai_key') || '';
+}
+function getApiProvider() {
+  return localStorage.getItem('dom_ai_provider') || 'gemini';
+}
+
+function abrirConfigChat() {
+  const setup = document.getElementById('chat-setup');
+  setup.style.display = 'block';
+  document.getElementById('ai-provider').value = getApiProvider();
+  document.getElementById('ai-key').value = getApiKey();
+  atualizarAjudaProvider();
+}
+
+function atualizarAjudaProvider() {
+  const provider = document.getElementById('ai-provider').value;
+  const help = document.getElementById('ai-help');
+  if (provider === 'gemini') {
+    help.innerHTML = 'Pega sua chave gratuita em <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a>. Ela fica salva só no seu navegador, ninguém mais vê.';
+  } else {
+    help.innerHTML = 'Pega sua chave em <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a> (precisa ter créditos). Ela fica salva só no seu navegador, ninguém mais vê.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('ai-provider');
+  if (sel) sel.addEventListener('change', atualizarAjudaProvider);
+});
+
+function salvarChave() {
+  const provider = document.getElementById('ai-provider').value;
+  const key = document.getElementById('ai-key').value.trim();
+  if (!key) {
+    alert('Cola sua chave de API antes de salvar!');
+    return;
+  }
+  localStorage.setItem('dom_ai_provider', provider);
+  localStorage.setItem('dom_ai_key', key);
+  document.getElementById('chat-setup').style.display = 'none';
+  addMsg('Tudo certo! 🎉 Chave salva. Agora pode perguntar o que quiser!', 'ai');
 }
 
 function addMsg(text, role) {
   const messages = document.getElementById('chat-messages');
   const div = document.createElement('div');
   div.className = 'msg ' + role;
-  // render markdown simples
   div.innerHTML = text
+    .replace(/```([\s\S]*?)```/g, (m, p1) => '<pre style="white-space:pre-wrap;margin:6px 0">' + p1.replace(/</g,'&lt;') + '</pre>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\n/g, '<br>');
@@ -1535,10 +2350,71 @@ function addLoading() {
   return div;
 }
 
+function montarSystemPrompt() {
+  const lessonCtx = lessons[currentIndex];
+  return `Você é um professor de JavaScript/DOM super simpático e didático.
+Responda SEMPRE em português brasileiro de forma bem simples, como se explicasse para uma criança curiosa que nunca programou.
+Use emojis, analogias do dia a dia, exemplos práticos e código quando necessário (use blocos de três crases).
+O aluno está na aula: "${lessonCtx.title}" — sobre "${lessonCtx.subtitle}".
+Seja breve (máx 200 palavras) mas completo. Se o aluno errar algo, corrija com gentileza e explique o motivo.`;
+}
+
+async function chamarGemini(key, history) {
+  const systemPrompt = montarSystemPrompt();
+  const contents = history.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents,
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      })
+    }
+  );
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'Erro na API do Gemini');
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Não consegui responder, tenta de novo!';
+}
+
+async function chamarAnthropic(key, history) {
+  const systemPrompt = montarSystemPrompt();
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: history
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'Erro na API da Anthropic');
+  return data.content?.[0]?.text || 'Não consegui responder, tenta de novo!';
+}
+
 async function sendChat() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
+
+  const key = getApiKey();
+  if (!key) {
+    openChat();
+    abrirConfigChat();
+    return;
+  }
 
   input.value = '';
   input.style.height = 'auto';
@@ -1546,42 +2422,20 @@ async function sendChat() {
   openChat();
 
   const loading = addLoading();
-
-  const lessonCtx = lessons[currentIndex];
   chatHistory.push({ role: 'user', content: text });
 
-  const systemPrompt = `Você é um professor de JavaScript/DOM super simpático e didático. 
-Responda SEMPRE em português brasileiro de forma simples, como se explicasse para uma criança de 10 anos curiosa.
-Use emojis 🎉, analogias do dia a dia, exemplos práticos e código quando necessário.
-O aluno está na aula: "${lessonCtx.title}" — sobre "${lessonCtx.subtitle}".
-Seja breve (máx 200 palavras) mas completo. Formate código com backticks.
-Se o aluno errar algo, corrija com gentileza e explique o motivo.`;
-
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: chatHistory.slice(-10)
-      })
-    });
+    const provider = getApiProvider();
+    const reply = provider === 'gemini'
+      ? await chamarGemini(key, chatHistory.slice(-10))
+      : await chamarAnthropic(key, chatHistory.slice(-10));
 
-    const data = await res.json();
     loading.remove();
-
-    if (data.content && data.content[0]) {
-      const reply = data.content[0].text;
-      chatHistory.push({ role: 'assistant', content: reply });
-      addMsg(reply, 'ai');
-    } else {
-      addMsg('Ops! Algo deu errado. Tente novamente! 😅', 'ai');
-    }
+    chatHistory.push({ role: 'assistant', content: reply });
+    addMsg(reply, 'ai');
   } catch (err) {
     loading.remove();
-    addMsg('❌ Erro de conexão. Verifique sua internet e tente de novo!', 'ai');
+    addMsg('❌ Erro: ' + err.message + '. Confere se a chave de API está certa em ⚙️.', 'ai');
   }
 }
 
